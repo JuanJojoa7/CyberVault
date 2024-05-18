@@ -13,7 +13,10 @@ function displayProducts(products) {
 // Función para obtener productos
 async function fetchProducts() {
     try {
-        const response = await fetch('/api/products'); // Ruta de la API
+        const response = await fetch('http://localhost:3000/api/products'); // Cambiado a la ruta del servidor Express
+        
+        console.log(response);
+        
         if (response.ok) {
             const products = await response.json();
             displayProducts(products);

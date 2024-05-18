@@ -1,11 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware para manejar solicitudes JSON
 app.use(express.json());
+
+// Middleware para habilitar CORS
+app.use(cors());
 
 // Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'client')));
@@ -22,15 +27,30 @@ app.post('/api/admin', (req, res) => {
   }
 });
 
+// Directorio donde se encuentra el archivo products.json
+const productsDir = path.join(__dirname, 'static');
+
 // Ruta para obtener productos
 app.get('/api/products', (req, res) => {
-  // Aquí puedes agregar lógica para cargar los productos desde un archivo JSON o una base de datos
-  const products = [
-    { id: 1, name: 'Product 1', price: 10 },
-    { id: 2, name: 'Product 2', price: 20 },
-    { id: 3, name: 'Product 3', price: 30 }
-  ];
-  res.json(products);
+  // Ruta completa al archivo JSON de productos
+  const productsFilePath = path.join(productsDir, 'products.json');
+
+  // Lee el archivo JSON de productos
+  fs.readFile(productsFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error al leer el archivo de productos:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    try {
+      const products = JSON.parse(data);
+      res.json(products);
+    } catch (error) {
+      console.error('Error al analizar el archivo JSON de productos:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 });
 
 // Iniciar el servidor
