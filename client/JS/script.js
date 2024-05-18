@@ -20,3 +20,25 @@ Password_eye_icon.addEventListener("click", () => {
     Password_eye_icon.removeAttribute("name", "eye-outline");
   }
 });
+
+/* FORM SUBMIT EVENTLISTENER */
+const loginForm = document.getElementById('login-form');
+const errorMessage = document.getElementById('error-message');
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault(); // Prevent default form submission
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    if (email == "admin@gmail.com" && password == "admin123") {
+        window.location.href = '/dashboard';
+    } else {
+      errorMessage.style.display = 'block';
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    errorMessage.style.display = 'block';
+  }
+});
