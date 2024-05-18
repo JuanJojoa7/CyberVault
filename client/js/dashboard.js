@@ -1,12 +1,71 @@
-// Función para mostrar productos
-function displayProducts(products) {
-    const productsList = document.getElementById('products-list');
-    productsList.innerHTML = '';
+// Obtener una referencia al contenedor de cartas
+const cardsContainer = document.getElementById('cards-container');
 
-    products.forEach(product => {
-        const productItem = document.createElement('li');
-        productItem.textContent = `${product.name} - $${product.price}`;
-        productsList.appendChild(productItem);
+// Función para renderizar las cartas
+function displayProducts(productsData) {
+    // Obtener una referencia al contenedor de cartas
+    const cardsContainer = document.getElementById('cards-container');
+
+    // Limpiar el contenedor antes de agregar nuevas cartas
+    cardsContainer.innerHTML = '';
+
+    // Iterar sobre los datos de los productos y crear una carta para cada uno
+    productsData.forEach(productData => {
+        // Crear elementos HTML para la carta
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        const cardHeader = document.createElement('div');
+        cardHeader.classList.add('card-header');
+
+        // const cardImage = document.createElement('img');
+        // cardImage.src = productData.image;
+        // cardImage.alt = productData.title;
+
+        const cardBody = document.createElement('div');
+        cardBody.classList.add('card-body');
+
+        const tag = document.createElement('span');
+        tag.classList.add('tag', `tag-${productData.tag}`);
+        tag.textContent = productData.tag;
+
+        const title = document.createElement('h4');
+        title.textContent = productData.title;
+
+        const description = document.createElement('p');
+        description.textContent = productData.description;
+
+        const user = document.createElement('div');
+        user.classList.add('user');
+
+        // const userImage = document.createElement('img');
+        // userImage.src = productData.user.image;
+        // userImage.alt = productData.user.name;
+
+        const userInfo = document.createElement('div');
+        userInfo.classList.add('user-info');
+
+        const userName = document.createElement('h5');
+        userName.textContent = productData.user.name;
+
+        const userTime = document.createElement('small');
+        userTime.textContent = productData.user.time;
+
+        // Agregar elementos a la estructura de la carta
+        // cardHeader.appendChild(cardImage);
+        card.appendChild(cardHeader);
+        cardBody.appendChild(tag);
+        cardBody.appendChild(title);
+        cardBody.appendChild(description);
+        userInfo.appendChild(userName);
+        userInfo.appendChild(userTime);
+        // user.appendChild(userImage);
+        user.appendChild(userInfo);
+        cardBody.appendChild(user);
+        card.appendChild(cardBody);
+
+        // Agregar la carta al contenedor
+        cardsContainer.appendChild(card);
     });
 }
 

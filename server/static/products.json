@@ -1,17 +1,41 @@
 [
     {
         "id": 1,
-        "name": "Product 1",
-        "price": 100
+        "title": "Product 1",
+        "price": 100,
+        "description": "Description of Product 1",
+        "tag": "Technology",
+        "image": "https://c0.wallpaperflare.com/preview/483/210/436/car-green-4x4-jeep.jpg",
+        "user": {
+            "name": "July Dec",
+            "time": "2h ago",
+            "image": "https://yt3.ggpht.com/a/AGF-l7-0J1G0Ue0mcZMw-99kMeVuBmRxiPjyvIYONg=s900-c-k-c0xffffffff-no-rj-mo"
+        }
     },
     {
         "id": 2,
-        "name": "Product 2",
-        "price": 200
+        "title": "Product 2",
+        "price": 200,
+        "description": "Description of Product 2",
+        "tag": "Popular",
+        "image": "https://www.newsbtc.com/wp-content/uploads/2020/06/mesut-kaya-LcCdl__-kO0-unsplash-scaled.jpg",
+        "user": {
+            "name": "Eyup Ucmaz",
+            "time": "Yesterday",
+            "image": "https://lh3.googleusercontent.com/ogw/ADGmqu8sn9zF15pW59JIYiLgx3PQ3EyZLFp5Zqao906l=s32-c-mo"
+        }
     },
     {
         "id": 3,
-        "name": "Product 3",
-        "price": 300
+        "title": "Product 3",
+        "price": 300,
+        "description": "Description of Product 3",
+        "tag": "Design",
+        "image": "https://images6.alphacoders.com/312/thumb-1920-312773.jpg",
+        "user": {
+            "name": "Carrie Brewer",
+            "time": "1w ago",
+            "image": "https://yt3.ggpht.com/a/AGF-l7-0J1G0Ue0mcZMw-99kMeVuBmRxiPjyvIYONg=s900-c-k-c0xffffffff-no-rj-mo"
+        }
     }
 ]
