@@ -18,9 +18,6 @@ function displayProducts(productsData) {
         const cardHeader = document.createElement('div');
         cardHeader.classList.add('card-header');
 
-        // const cardImage = document.createElement('img');
-        // cardImage.src = productData.image;
-        // cardImage.alt = productData.title;
 
         const cardBody = document.createElement('div');
         cardBody.classList.add('card-body');
@@ -32,8 +29,19 @@ function displayProducts(productsData) {
         const title = document.createElement('h4');
         title.textContent = productData.title;
 
+        const cardImage = document.createElement('img');
+        cardImage.src = productData.image;
+        cardImage.alt = productData.title;
+
         const description = document.createElement('p');
         description.textContent = productData.description;
+
+        const price = document.createElement('p');
+        price.innerHTML = '<b> Price: </b>$'+ productData.price;
+
+        const quantity = document.createElement('p');
+        quantity.innerHTML = '<b>Quantity: </b>' + productData.quantity;
+
 
         const user = document.createElement('div');
         user.classList.add('user');
@@ -52,11 +60,13 @@ function displayProducts(productsData) {
         userTime.textContent = productData.user.time;
 
         // Agregar elementos a la estructura de la carta
-        // cardHeader.appendChild(cardImage);
         card.appendChild(cardHeader);
         cardBody.appendChild(tag);
         cardBody.appendChild(title);
+        cardHeader.appendChild(cardImage); // Add image
         cardBody.appendChild(description);
+        cardBody.appendChild(price); // Add price
+        cardBody.appendChild(quantity); // Add quantity
         userInfo.appendChild(userName);
         userInfo.appendChild(userTime);
         // user.appendChild(userImage);
@@ -68,6 +78,7 @@ function displayProducts(productsData) {
         cardsContainer.appendChild(card);
     });
 }
+
 
 // Función para obtener productos
 async function fetchProducts() {
