@@ -135,7 +135,17 @@ nav {
   margin-left: 20px;
 }
 
+.exit-icon {
+  margin-left: 10px;
+  width: 34px;
+  height: 34px;
+}
+
 .cart-icon:hover,
-.login-icon:hover {
+.login-icon:hover, 
+.exit-icon:hover {
+  cursor: pointer;
   filter: brightness(1.2);
 }
+
+

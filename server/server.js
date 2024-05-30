@@ -7,12 +7,16 @@ const User = require('./user');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Directorio donde se encuentra el archivo products.json
+const productsDir = path.join(__dirname, 'static');
+
 let users = [];
 
-users.push(User("Admin", "admin@gmail.com", "admin123", true));
-users.push(User("Mock Client", "user@gmail.com", "admin123", false));
+users.push(new User("Admin", "admin@gmail.com", "admin123", true));
+users.push(new User("Mock Client", "user@gmail.com", "user123", false));
 
 let admin = users[0];
+let loggedUser;
 
 // Middleware para manejar solicitudes JSON
 app.use(express.json());
@@ -23,8 +27,9 @@ app.use(cors());
 // Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'client')));
 
-// Ruta para autenticación de administrador
+// Ruta para autenticación del usuario
 app.post('/api/login', (req, res) => {
+  console.log("Login attempted");
   const { email, password } = req.body;
   let authenticated = false;
 
@@ -33,8 +38,11 @@ app.post('/api/login', (req, res) => {
       res.json({ success: true });
       authenticated = true;
 
-      if (user == admin) {
+      if (authenticated && user === admin) {
         admin.setIsOnline(true);
+      } else if (authenticated) {
+        loggedUser = user;
+        loggedUser.setIsOnline(true);
       }
 
       break;
@@ -46,8 +54,21 @@ app.post('/api/login', (req, res) => {
   }
 });
 
-// Directorio donde se encuentra el archivo products.json
-const productsDir = path.join(__dirname, 'static');
+
+app.get('/api/whos_logged', (req, res) => {
+  try {
+    res.json(
+      {
+        success: true,
+        isSomebodyLogged: typeof loggedUser !== 'undefined' && loggedUser !== null,
+        isAdmin: admin.isOnline
+      }
+    );
+  } catch (error) {
+    console.error('Error al detectar usuarios loggeados');
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Ruta para obtener productos
 app.get('/api/products', (req, res) => {
@@ -70,6 +91,12 @@ app.get('/api/products', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+});
+
+app.post('/api/logout', (req, res) => {
+  loggedUser = null;
+
+  res.status(200).send({ message: 'Logout successful' });
 });
 
 // Iniciar el servidor

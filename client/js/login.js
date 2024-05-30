@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 const baseURL = 'http://localhost:3000';
 
 /* PASSWORD INPUT */
@@ -35,14 +33,16 @@ loginForm.addEventListener('submit', async (event) => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
+  console.log("Submit pressed");
+
   try {
     const response = await axios.post(`${baseURL}/api/login`, {
       email,
       password
     });
 
-    if (response.ok) {
-      window.location.href("../index.html");
+    if (response.status === 200) {
+      window.location.href = "../index.html";
     }
 
   } catch (error) {
