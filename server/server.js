@@ -2,9 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const User = require('./user');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+let users = [];
+
+users.push(User("Admin", "admin@gmail.com", "admin123", true));
+users.push(User("Mock Client", "user@gmail.com", "admin123", false));
+
+let admin = users[0];
 
 // Middleware para manejar solicitudes JSON
 app.use(express.json());
@@ -16,13 +24,24 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'client')));
 
 // Ruta para autenticación de administrador
-app.post('/api/admin', (req, res) => {
+app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
+  let authenticated = false;
 
-  // Simula la validación de las credenciales
-  if (email === 'admin@gmail.com' && password === 'admin123') {
-    res.json({ success: true });
-  } else {
+  for (let user of users) {
+    if (email === user.email && password === user.password) {
+      res.json({ success: true });
+      authenticated = true;
+
+      if (user == admin) {
+        admin.setIsOnline(true);
+      }
+
+      break;
+    }
+  }
+
+  if (!authenticated) {
     res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
 });

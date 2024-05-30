@@ -1,3 +1,7 @@
+const axios = require('axios');
+
+const baseURL = 'http://localhost:3000';
+
 /* PASSWORD INPUT */
 const Password_input = document.querySelector(".password--input");
 
@@ -32,11 +36,15 @@ loginForm.addEventListener('submit', async (event) => {
   const password = document.getElementById('password').value;
 
   try {
-    if (email == "admin@gmail.com" && password == "admin123") {
-        window.location.href = '/dashboard';
-    } else {
-      errorMessage.style.display = 'block';
+    const response = await axios.post(`${baseURL}/api/login`, {
+      email,
+      password
+    });
+
+    if (response.ok) {
+      window.location.href("../index.html");
     }
+
   } catch (error) {
     console.error('Error:', error);
     errorMessage.style.display = 'block';
