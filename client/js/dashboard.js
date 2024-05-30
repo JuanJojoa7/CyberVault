@@ -103,9 +103,9 @@ axios.get(`${baseURL}/api/whos_logged`)
   .then(response => {
     console.log(response);
     if (response.data.isSomebodyLogged) {
-      document.getElementById('logout-button').style.display = 'none';
-    } else {
       document.getElementById('logout-button').style.display = 'block';
+    } else {
+      document.getElementById('logout-button').style.display = 'none';
     }
 
     if (response.data.isAdmin) {

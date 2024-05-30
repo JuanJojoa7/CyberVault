@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 // Directorio donde se encuentra el archivo products.json
 const productsDir = path.join(__dirname, 'static');
 
+const productsData = fs.readFileSync(path.join(productsDir, 'products.json'), 'utf8');
+let products = JSON.parse(productsData);
+
 let users = [];
 
 users.push(new User("Admin", "admin@gmail.com", "admin123", true));
@@ -38,12 +41,8 @@ app.post('/api/login', (req, res) => {
       res.json({ success: true });
       authenticated = true;
 
-      if (authenticated && user === admin) {
-        admin.setIsOnline(true);
-      } else if (authenticated) {
-        loggedUser = user;
-        loggedUser.setIsOnline(true);
-      }
+      loggedUser = user;
+      loggedUser.setIsOnline(true);
 
       break;
     }
@@ -94,9 +93,56 @@ app.get('/api/products', (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => {
+  loggedUser.setIsOnline(false);
+  // console.log(loggedUser.name);
+  // console.log(loggedUser.isOnline);
+
   loggedUser = null;
 
   res.status(200).send({ message: 'Logout successful' });
+});
+
+app.get('/api/get_user_history', (req, res) => {
+  if (loggedUser !== null) {
+    res.status(200).send({ history: loggedUser.history });
+  } else {
+    res.status(401).send({ error: 'No logged user', history: [] });
+  }
+});
+
+// POST: Crear un nuevo producto
+app.post('/api/products', (req, res) => {
+  const newProduct = req.body;
+  newProduct.id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
+  products.push(newProduct);
+  res.status(201).send(newProduct);
+});
+
+// PUT: Actualizar un producto existente
+app.put('/api/products/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const productIndex = products.findIndex(p => p.id === id);
+
+  if (productIndex === -1) {
+    return res.status(404).send({ error: 'Product not found' });
+  }
+
+  const updatedProduct = { ...products[productIndex], ...req.body };
+  products[productIndex] = updatedProduct;
+  res.send(updatedProduct);
+});
+
+// DELETE: Eliminar un producto existente
+app.delete('/api/products/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const productIndex = products.findIndex(p => p.id === id);
+
+  if (productIndex === -1) {
+    return res.status(404).send({ error: 'Product not found' });
+  }
+
+  const deletedProduct = products.splice(productIndex, 1);
+  res.send(deletedProduct);
 });
 
 // Iniciar el servidor
