@@ -242,6 +242,7 @@ productForm.addEventListener('submit', async (event) => {
     if (response.status === 201 || response.status === 200) {
       hideModal();
       fetchProducts();
+      location.reload();
     }
   } catch (error) {
     console.error('Error al guardar el producto:', error);
@@ -265,6 +266,7 @@ async function deleteProduct(productId) {
     const response = await axios.delete(`${baseURL}/api/products/${productId}`);
     if (response.status === 200) {
       fetchProducts();
+      location.reload();
     }
   } catch (error) {
     console.error('Error al eliminar el producto:', error);
