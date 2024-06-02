@@ -188,6 +188,11 @@ document.getElementById('login-button').addEventListener('click', () => {
   window.location.href = 'pages/login.html';
 });
 
+// Redirigir a la página del historial
+document.getElementById('history-button').addEventListener('click', () => {
+  window.location.href = 'history.html';
+});
+
 // Redirigir a la página del carrito cuando se hace clic en la imagen del carrito
 document.getElementById('cart-button').addEventListener('click', () => {
   window.location.href = 'cart.html';
