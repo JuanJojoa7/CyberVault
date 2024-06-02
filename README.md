@@ -1,5 +1,10 @@
 # CyberVault
 
+#Juan Sebastian Gonzalez
+#Oscar Gomez
+#Juan Felipe Jojoa Crespo
+#Juan Manuel Marin Angarita
+
 # How to run
 
 # Enter root and enter server folder using cd server
