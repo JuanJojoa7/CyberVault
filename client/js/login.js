@@ -1,3 +1,5 @@
+const baseURL = 'http://localhost:3000';
+
 /* PASSWORD INPUT */
 const Password_input = document.querySelector(".password--input");
 
@@ -31,12 +33,18 @@ loginForm.addEventListener('submit', async (event) => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
+  console.log("Submit pressed");
+
   try {
-    if (email == "admin@gmail.com" && password == "admin123") {
-        window.location.href = '/dashboard';
-    } else {
-      errorMessage.style.display = 'block';
+    const response = await axios.post(`${baseURL}/api/login`, {
+      email,
+      password
+    });
+
+    if (response.status === 200) {
+      window.location.href = "../index.html";
     }
+
   } catch (error) {
     console.error('Error:', error);
     errorMessage.style.display = 'block';

@@ -20,7 +20,7 @@
         "quantity": 2,
         "description": "Description of Product 2",
         "tag": "Popular",
-        "image": "https://imgur.com/a/qNqMzRb",
+        "image": "https://res.cloudinary.com/dyegt26ww/image/upload/v1717287199/resul-kaya-xxL1FavYOh0-unsplash_zsr7ns.jpg",
         "user": {
             "name": "Eyup Ucmaz",
             "time": "Yesterday",

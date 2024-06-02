@@ -2,9 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const User = require('./user');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Directorio donde se encuentra el archivo products.json
+const productsDir = path.join(__dirname, 'static');
+
+const productsData = fs.readFileSync(path.join(productsDir, 'products.json'), 'utf8');
+let products = JSON.parse(productsData);
+
+let users = [];
+
+users.push(new User("Admin", "admin@gmail.com", "admin123", true));
+users.push(new User("Mock Client", "user@gmail.com", "user123", false));
+
+let admin = users[0];
+let loggedUser;
 
 // Middleware para manejar solicitudes JSON
 app.use(express.json());
@@ -15,20 +30,44 @@ app.use(cors());
 // Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'client')));
 
-// Ruta para autenticación de administrador
-app.post('/api/admin', (req, res) => {
+// Ruta para autenticación del usuario
+app.post('/api/login', (req, res) => {
+  console.log("Login attempted");
   const { email, password } = req.body;
+  let authenticated = false;
 
-  // Simula la validación de las credenciales
-  if (email === 'admin@gmail.com' && password === 'admin123') {
-    res.json({ success: true });
-  } else {
+  for (let user of users) {
+    if (email === user.email && password === user.password) {
+      res.json({ success: true });
+      authenticated = true;
+
+      loggedUser = user;
+      loggedUser.setIsOnline(true);
+
+      break;
+    }
+  }
+
+  if (!authenticated) {
     res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
 });
 
-// Directorio donde se encuentra el archivo products.json
-const productsDir = path.join(__dirname, 'static');
+
+app.get('/api/whos_logged', (req, res) => {
+  try {
+    res.json(
+      {
+        success: true,
+        isSomebodyLogged: typeof loggedUser !== 'undefined' && loggedUser !== null,
+        isAdmin: admin.isOnline
+      }
+    );
+  } catch (error) {
+    console.error('Error al detectar usuarios loggeados');
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Ruta para obtener productos
 app.get('/api/products', (req, res) => {
@@ -51,6 +90,59 @@ app.get('/api/products', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+});
+
+app.post('/api/logout', (req, res) => {
+  loggedUser.setIsOnline(false);
+  // console.log(loggedUser.name);
+  // console.log(loggedUser.isOnline);
+
+  loggedUser = null;
+
+  res.status(200).send({ message: 'Logout successful' });
+});
+
+app.get('/api/get_user_history', (req, res) => {
+  if (loggedUser !== null) {
+    res.status(200).send({ history: loggedUser.history });
+  } else {
+    res.status(401).send({ error: 'No logged user', history: [] });
+  }
+});
+
+// POST: Crear un nuevo producto
+app.post('/api/products', (req, res) => {
+  const newProduct = req.body;
+  newProduct.id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
+  products.push(newProduct);
+  res.status(201).send(newProduct);
+});
+
+// PUT: Actualizar un producto existente
+app.put('/api/products/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const productIndex = products.findIndex(p => p.id === id);
+
+  if (productIndex === -1) {
+    return res.status(404).send({ error: 'Product not found' });
+  }
+
+  const updatedProduct = { ...products[productIndex], ...req.body };
+  products[productIndex] = updatedProduct;
+  res.send(updatedProduct);
+});
+
+// DELETE: Eliminar un producto existente
+app.delete('/api/products/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const productIndex = products.findIndex(p => p.id === id);
+
+  if (productIndex === -1) {
+    return res.status(404).send({ error: 'Product not found' });
+  }
+
+  const deletedProduct = products.splice(productIndex, 1);
+  res.send(deletedProduct);
 });
 
 // Iniciar el servidor
