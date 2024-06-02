@@ -2,52 +2,40 @@ const baseURL = 'http://localhost:3000';
 
 // Obtener una referencia al contenedor de cartas
 const cardsContainer = document.getElementById('cards-container');
+const addProductButton = document.getElementById('add-product-button');
+const productModal = document.getElementById('product-modal');
+const modalTitle = document.getElementById('modal-title');
+const productForm = document.getElementById('product-form');
+const closeModal = document.querySelector('.close');
 
-// Función para renderizar la barra de búsqueda
-function renderSearchBar() {
-    const searchBarContainer = document.getElementById('search-bar-container');
-    const searchBar = document.createElement('input');
-    searchBar.type = 'text';
-    searchBar.id = 'search-bar';
-    searchBar.placeholder = 'Search products...';
-    searchBar.addEventListener('input', handleSearchInput);
-    searchBarContainer.appendChild(searchBar);
+let isAdmin = false;
+let editProductId = null;
+
+// Mostrar/ocultar modal
+function showModal() {
+  productModal.style.display = 'block';
 }
 
-// Función para inicializar la página
-async function init() {
-    const products = await fetchProducts();
-    displayProducts(products);
+function hideModal() {
+  productModal.style.display = 'none';
+  productForm.reset();
+  editProductId = null;
 }
 
-// Llamar a init cuando la página se carga
-window.onload = init;
+addProductButton.addEventListener('click', () => {
+  modalTitle.textContent = 'Add Product';
+  showModal();
+});
 
-// Función para manejar el evento de entrada de la barra de búsqueda
-async function handleSearchInput(event) {
-    const searchTerm = event.target.value;
-    console.log(`Search term: ${searchTerm}`); // Log the search term
-
-    const products = await fetchProducts();
-    console.log(`Fetched products: ${JSON.stringify(products)}`); // Log the fetched products
-
-    const filteredProducts = searchTerm ? products.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase())
-    ) : products;
-    console.log(`Filtered products: ${JSON.stringify(filteredProducts)}`); // Log the filtered products
-
-    displayProducts(filteredProducts);
-}
-
-// Llamar a renderSearchBar en el evento DOMContentLoaded
-window.addEventListener('DOMContentLoaded', () => {
-    fetchProducts();
-    renderSearchBar();
+closeModal.addEventListener('click', hideModal);
+window.addEventListener('click', (event) => {
+  if (event.target == productModal) {
+    hideModal();
+  }
 });
 
 // Función para renderizar las cartas
 function displayProducts(productsData) {
-  const cardsContainer = document.getElementById('cards-container');
   cardsContainer.innerHTML = '';
 
   productsData.forEach(productData => {
@@ -94,6 +82,21 @@ function displayProducts(productsData) {
     cardBody.appendChild(addToCartBtn);
     card.appendChild(cardBody);
 
+    if (isAdmin) {
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.classList.add('edit-button');
+      editButton.addEventListener('click', () => editProduct(productData));
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.classList.add('delete-button');
+      deleteButton.addEventListener('click', () => deleteProduct(productData.id));
+
+      cardBody.appendChild(editButton);
+      cardBody.appendChild(deleteButton);
+    }
+
     cardsContainer.appendChild(card);
   });
 }
@@ -115,27 +118,17 @@ function addToCart(product) {
 
 // Función para obtener productos
 async function fetchProducts() {
-    try {
-        const response = await fetch(`${baseURL}/api/products`);
-        if (response.ok) {
-            const products = await response.json();
-            return products;
-        } else {
-            console.error('Error al obtener los productos:', response.statusText);
-        }
-    } catch (error) {
-        console.error('Error al obtener los productos:', error);
+  try {
+    const response = await fetch(`${baseURL}/api/products`);
+    if (response.ok) {
+      const products = await response.json();
+      displayProducts(products);
+    } else {
+      console.error('Error al obtener los productos:', response.statusText);
     }
-}
-
-// Función para manejar el evento de entrada de la barra de búsqueda
-async function handleSearchInput(event) {
-    const searchTerm = event.target.value;
-    const products = await fetchProducts();
-    const filteredProducts = products.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    displayProducts(filteredProducts);
+  } catch (error) {
+    console.error('Error al obtener los productos:', error);
+  }
 }
 
 // Redirigir a la página de inicio de sesión cuando se hace clic en el icono de inicio de sesión
@@ -153,19 +146,73 @@ window.addEventListener('DOMContentLoaded', fetchProducts);
 
 axios.get(`${baseURL}/api/whos_logged`)
   .then(response => {
-    console.log(response);
     if (response.data.isSomebodyLogged) {
       document.getElementById('logout-button').style.display = 'block';
-      document.getElementById('login-button').style.display = 'none';
     } else {
       document.getElementById('logout-button').style.display = 'none';
-        document.getElementById('login-button').style.display = 'block';
     }
 
     if (response.data.isAdmin) {
       document.getElementById('cart-button').style.display = 'none';
+      document.getElementById('add-product-button').style.display = 'block';
+      isAdmin = true;
     } else {
       document.getElementById('cart-button').style.display = 'block';
+      document.getElementById('add-product-button').style.display = 'none';
+      isAdmin = false;
     }
   })
   .catch(error => console.error(error));
+
+// Función para manejar el formulario de producto
+productForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const productData = {
+    title: productForm.title.value,
+    description: productForm.description.value,
+    price: productForm.price.value,
+    quantity: productForm.quantity.value,
+    tag: productForm.tag.value,
+    image: productForm.image.value,
+  };
+
+  try {
+    let response;
+    if (editProductId) {
+      response = await axios.put(`${baseURL}/api/products/${editProductId}`, productData);
+    } else {
+      response = await axios.post(`${baseURL}/api/products`, productData);
+    }
+
+    if (response.status === 201 || response.status === 200) {
+      hideModal();
+      fetchProducts();
+    }
+  } catch (error) {
+    console.error('Error al guardar el producto:', error);
+  }
+});
+
+function editProduct(productData) {
+  modalTitle.textContent = 'Edit Product';
+  productForm.title.value = productData.title;
+  productForm.description.value = productData.description;
+  productForm.price.value = productData.price;
+  productForm.quantity.value = productData.quantity;
+  productForm.tag.value = productData.tag;
+  productForm.image.value = productData.image;
+  editProductId = productData.id;
+  showModal();
+}
+
+async function deleteProduct(productId) {
+  try {
+    const response = await axios.delete(`${baseURL}/api/products/${productId}`);
+    if (response.status === 200) {
+      fetchProducts();
+    }
+  } catch (error) {
+    console.error('Error al eliminar el producto:', error);
+  }
+}
