@@ -149,7 +149,20 @@ nav {
   filter: brightness(1.2);
 }
 
-/* New CSS */
+#search-bar-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 100px;
+}
+
+#search-bar {
+  width: 70%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}/* New CSS */
 .add-product-button {
   display: none;
   padding: 10px 20px;

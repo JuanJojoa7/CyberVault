@@ -189,3 +189,10 @@ ion-icon {
 .login__input:not(:placeholder-shown).login__input:not(:focus) + .login__label {
   top: -12px;
 }
+.button__register {
+  display: block;
+  text-align: center;
+  color: white;
+  text-decoration: underline;
+  text-decoration-color: white;
+}
