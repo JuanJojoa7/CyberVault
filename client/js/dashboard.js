@@ -2,6 +2,37 @@ const baseURL = 'http://localhost:3000';
 
 // Obtener una referencia al contenedor de cartas
 const cardsContainer = document.getElementById('cards-container');
+const addProductButton = document.getElementById('add-product-button');
+const productModal = document.getElementById('product-modal');
+const modalTitle = document.getElementById('modal-title');
+const productForm = document.getElementById('product-form');
+const closeModal = document.querySelector('.close');
+
+let isAdmin = false;
+let editProductId = null;
+
+// Mostrar/ocultar modal
+function showModal() {
+  productModal.style.display = 'block';
+}
+
+function hideModal() {
+  productModal.style.display = 'none';
+  productForm.reset();
+  editProductId = null;
+}
+
+addProductButton.addEventListener('click', () => {
+  modalTitle.textContent = 'Add Product';
+  showModal();
+});
+
+closeModal.addEventListener('click', hideModal);
+window.addEventListener('click', (event) => {
+  if (event.target == productModal) {
+    hideModal();
+  }
+});
 
 // Función para renderizar la barra de búsqueda
 function renderSearchBar() {
@@ -47,7 +78,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Función para renderizar las cartas
 function displayProducts(productsData) {
-  const cardsContainer = document.getElementById('cards-container');
   cardsContainer.innerHTML = '';
 
   productsData.forEach(productData => {
@@ -93,6 +123,21 @@ function displayProducts(productsData) {
     cardBody.appendChild(quantity);
     cardBody.appendChild(addToCartBtn);
     card.appendChild(cardBody);
+
+    if (isAdmin) {
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.classList.add('edit-button');
+      editButton.addEventListener('click', () => editProduct(productData));
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.classList.add('delete-button');
+      deleteButton.addEventListener('click', () => deleteProduct(productData.id));
+
+      cardBody.appendChild(editButton);
+      cardBody.appendChild(deleteButton);
+    }
 
     cardsContainer.appendChild(card);
   });
@@ -153,7 +198,6 @@ window.addEventListener('DOMContentLoaded', fetchProducts);
 
 axios.get(`${baseURL}/api/whos_logged`)
   .then(response => {
-    console.log(response);
     if (response.data.isSomebodyLogged) {
       document.getElementById('logout-button').style.display = 'block';
       document.getElementById('login-button').style.display = 'none';
@@ -164,8 +208,67 @@ axios.get(`${baseURL}/api/whos_logged`)
 
     if (response.data.isAdmin) {
       document.getElementById('cart-button').style.display = 'none';
+      document.getElementById('add-product-button').style.display = 'block';
+      isAdmin = true;
     } else {
       document.getElementById('cart-button').style.display = 'block';
+      document.getElementById('add-product-button').style.display = 'none';
+      isAdmin = false;
     }
   })
   .catch(error => console.error(error));
+
+// Función para manejar el formulario de producto
+productForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const productData = {
+    title: productForm.title.value,
+    description: productForm.description.value,
+    price: productForm.price.value,
+    quantity: productForm.quantity.value,
+    tag: productForm.tag.value,
+    image: productForm.image.value,
+  };
+
+  try {
+    let response;
+    if (editProductId) {
+      response = await axios.put(`${baseURL}/api/products/${editProductId}`, productData);
+    } else {
+      response = await axios.post(`${baseURL}/api/products`, productData);
+    }
+
+    if (response.status === 201 || response.status === 200) {
+      hideModal();
+      fetchProducts();
+      location.reload();
+    }
+  } catch (error) {
+    console.error('Error al guardar el producto:', error);
+  }
+});
+
+function editProduct(productData) {
+  modalTitle.textContent = 'Edit Product';
+  productForm.title.value = productData.title;
+  productForm.description.value = productData.description;
+  productForm.price.value = productData.price;
+  productForm.quantity.value = productData.quantity;
+  productForm.tag.value = productData.tag;
+  productForm.image.value = productData.image;
+  editProductId = productData.id;
+  showModal();
+}
+
+async function deleteProduct(productId) {
+  try {
+    const response = await axios.delete(`${baseURL}/api/products/${productId}`);
+    if (response.status === 200) {
+      fetchProducts();
+      location.reload();
+    }
+  } catch (error) {
+    console.error('Error al eliminar el producto:', error);
+  }
+}
