@@ -156,8 +156,10 @@ axios.get(`${baseURL}/api/whos_logged`)
     console.log(response);
     if (response.data.isSomebodyLogged) {
       document.getElementById('logout-button').style.display = 'block';
+      document.getElementById('login-button').style.display = 'none';
     } else {
       document.getElementById('logout-button').style.display = 'none';
+        document.getElementById('login-button').style.display = 'block';
     }
 
     if (response.data.isAdmin) {
