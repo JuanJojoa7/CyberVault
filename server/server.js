@@ -53,6 +53,28 @@ app.post('/api/login', (req, res) => {
   }
 });
 
+// Ruta para registro del usuario
+app.post('/api/register', (req, res) => {
+  console.log("Registration attempted");
+  const { fullname, email, password } = req.body;
+
+  // Comprobar si el correo electrónico ya está en uso
+  for (let user of users) {
+    if (email === user.email) {
+      res.status(400).json({ success: false, message: 'Email already in use' });
+      return;
+    }
+  }
+
+  // Crear el nuevo usuario
+  const newUser = new User(fullname, email, password, true);
+
+  // Añadir el nuevo usuario a la lista de usuarios
+  users.push(newUser);
+
+  // Enviar una respuesta de éxito
+  res.json({ success: true });
+});
 
 app.get('/api/whos_logged', (req, res) => {
   try {
