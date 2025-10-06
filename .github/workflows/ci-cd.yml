@@ -136,7 +136,9 @@ jobs:
           --exclude=.git \
           --exclude=coverage \
           --exclude=__tests__ \
-          .
+          --exclude=*.tar.gz \
+          --exclude=.github \
+          server/ client/ package.json package-lock.json *.md *.yml docker-compose.yml LICENSE sonar-project.properties
     
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
