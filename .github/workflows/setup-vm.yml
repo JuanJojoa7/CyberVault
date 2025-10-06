@@ -11,7 +11,7 @@ on:
       vm_user:
         description: 'Usuario de la VM'
         required: true
-        default: 'azureuser'
+        default: 'vmadmin'
 
 jobs:
   setup-sonarqube-vm:
@@ -22,16 +22,19 @@ jobs:
     - name: Checkout código
       uses: actions/checkout@v3
     
-    - name: Configurar SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ github.event.inputs.vm_ip }} >> ~/.ssh/known_hosts
+    - name: Instalar sshpass para autenticación por contraseña
+      run: sudo apt-get update && sudo apt-get install -y sshpass
     
-    - name: Conectar y configurar VM
+    - name: Conectar y configurar VM con contraseña
+      env:
+        VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ github.event.inputs.vm_user }}@${{ github.event.inputs.vm_ip }} << 'EOF'
+        export SSHPASS="$VM_PASSWORD"
+        
+        # Agregar host a known_hosts para evitar prompt
+        ssh-keyscan -H ${{ github.event.inputs.vm_ip }} >> ~/.ssh/known_hosts 2>/dev/null || true
+        
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ github.event.inputs.vm_user }}@${{ github.event.inputs.vm_ip }} << 'EOF'
         
         echo "=== Actualizando sistema ==="
         sudo apt update && sudo apt upgrade -y
@@ -41,6 +44,9 @@ jobs:
         sudo systemctl start docker
         sudo systemctl enable docker
         sudo usermod -aG docker $USER
+        
+        echo "=== Configurando firewall para SonarQube ==="
+        sudo ufw allow 9000/tcp || echo "UFW no disponible o ya configurado"
         
         echo "=== Configurando SonarQube ==="
         mkdir -p ~/sonarqube
@@ -72,7 +78,7 @@ jobs:
         sudo docker-compose up -d
         
         echo "=== Esperando que SonarQube inicie ==="
-        sleep 60
+        sleep 90
         
         echo "=== Verificando estado ==="
         sudo docker ps
@@ -82,9 +88,18 @@ jobs:
     
     - name: Verificar SonarQube desde GitHub
       run: |
-        echo "Verificando SonarQube desde GitHub Actions..."
-        sleep 30
-        curl -s http://${{ github.event.inputs.vm_ip }}:9000/api/system/status || echo "Aún no disponible externamente"
+        echo "Esperando que SonarQube esté disponible externamente..."
+        sleep 60
+        
+        for i in {1..10}; do
+          if curl -s http://${{ github.event.inputs.vm_ip }}:9000/api/system/status; then
+            echo "✅ SonarQube está respondiendo!"
+            break
+          else
+            echo "⏳ Intento $i/10: SonarQube aún iniciando..."
+            sleep 30
+          fi
+        done
     
     - name: Mostrar información de configuración
       run: |
@@ -103,4 +118,6 @@ jobs:
         echo "SONAR_HOST_URL: http://${{ github.event.inputs.vm_ip }}:9000"
         echo "SONAR_TOKEN: [tu token generado]"
         echo ""
-        echo "⚠️ IMPORTANTE: Asegúrate de que el puerto 9000 esté abierto en Azure"
+        echo "⚠️ IMPORTANTE:"
+        echo "- Asegúrate de que el puerto 9000 esté abierto en Azure"
+        echo "- Si no funciona, verifica el Network Security Group en Azure"
