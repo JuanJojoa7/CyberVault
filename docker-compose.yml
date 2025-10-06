@@ -6,12 +6,20 @@ services:
     container_name: sonarqube
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONAR_WEB_JAVAADDITIONALOPTS=-Xmx1024m -Xms512m
+      - SONAR_SEARCH_JAVAADDITIONALOPTS=-Xmx1024m -Xms512m
     ports:
       - "9000:9000"
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 2G
     networks:
       - sonarnet
 
