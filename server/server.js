@@ -37,7 +37,7 @@ app.use(express.json());
 app.use(cors());
 
 // Middleware para servir archivos estáticos
-app.use(express.static(path.join(__dirname, 'client')));
+app.use(express.static(path.join(__dirname, '..', 'client')));
 
 // Ruta para autenticación del usuario
 app.post('/api/login', (req, res) => {
