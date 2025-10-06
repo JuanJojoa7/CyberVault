@@ -1,0 +1,89 @@
+---
+- name: Configure SonarQube project
+  hosts: sonarqube_servers
+  vars:
+    sonarqube_url: "http://{{ ansible_host }}:9000"
+    admin_user: admin
+    admin_password: admin  # Change this after first setup
+    project_key: cybervault
+    project_name: CyberVault
+    
+  tasks:
+    - name: Wait for SonarQube to be ready
+      uri:
+        url: "{{ sonarqube_url }}/api/system/status"
+        method: GET
+        status_code: 200
+      register: result
+      until: result.json.status == "UP"
+      retries: 30
+      delay: 10
+
+    - name: Check if project exists
+      uri:
+        url: "{{ sonarqube_url }}/api/projects/search"
+        method: GET
+        user: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        force_basic_auth: yes
+        status_code: [200, 401]
+      register: project_check
+
+    - name: Create project if it doesn't exist
+      uri:
+        url: "{{ sonarqube_url }}/api/projects/create"
+        method: POST
+        user: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        force_basic_auth: yes
+        body_format: form-urlencoded
+        body:
+          project: "{{ project_key }}"
+          name: "{{ project_name }}"
+        status_code: [200, 400]
+      when: project_check.status == 200
+      ignore_errors: yes
+
+    - name: Generate user token for CI/CD
+      uri:
+        url: "{{ sonarqube_url }}/api/user_tokens/generate"
+        method: POST
+        user: "{{ admin_user }}"
+        password: "{{ admin_password }}"
+        force_basic_auth: yes
+        body_format: form-urlencoded
+        body:
+          name: "github-actions-token"
+        status_code: [200, 400]
+      register: token_result
+      ignore_errors: yes
+
+    - name: Display setup information
+      debug:
+        msg: |
+          ==========================================
+          SonarQube Configuration Complete!
+          ==========================================
+          
+          Server URL: {{ sonarqube_url }}
+          Project Key: {{ project_key }}
+          Project Name: {{ project_name }}
+          
+          {% if token_result.json is defined and token_result.json.token is defined %}
+          Generated Token: {{ token_result.json.token }}
+          {% else %}
+          Note: Please generate a token manually in SonarQube UI
+          {% endif %}
+          
+          GitHub Secrets to configure:
+          1. SONAR_HOST_URL: {{ sonarqube_url }}
+          2. SONAR_TOKEN: [Use the token above or generate manually]
+          
+          Manual steps if token generation failed:
+          1. Login to {{ sonarqube_url }}
+          2. Go to Administration > Security > Users
+          3. Click on "Tokens" for admin user
+          4. Generate new token named "github-actions-token"
+          5. Copy token to GitHub repository secrets
+          
+          ==========================================

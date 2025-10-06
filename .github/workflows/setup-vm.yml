@@ -1,0 +1,106 @@
+name: Setup SonarQube VM (One-time)
+
+# Este pipeline se ejecuta SOLO cuando tú lo dispares manualmente
+on:
+  workflow_dispatch:
+    inputs:
+      vm_ip:
+        description: 'IP de tu VM de Azure'
+        required: true
+        default: '172.177.237.92'
+      vm_user:
+        description: 'Usuario de la VM'
+        required: true
+        default: 'azureuser'
+
+jobs:
+  setup-sonarqube-vm:
+    name: Configurar SonarQube en VM
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+    
+    - name: Configurar SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ github.event.inputs.vm_ip }} >> ~/.ssh/known_hosts
+    
+    - name: Conectar y configurar VM
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ github.event.inputs.vm_user }}@${{ github.event.inputs.vm_ip }} << 'EOF'
+        
+        echo "=== Actualizando sistema ==="
+        sudo apt update && sudo apt upgrade -y
+        
+        echo "=== Instalando Docker ==="
+        sudo apt install docker.io docker-compose -y
+        sudo systemctl start docker
+        sudo systemctl enable docker
+        sudo usermod -aG docker $USER
+        
+        echo "=== Configurando SonarQube ==="
+        mkdir -p ~/sonarqube
+        cd ~/sonarqube
+        
+        cat > docker-compose.yml << 'COMPOSE_EOF'
+        version: '3.8'
+        services:
+          sonarqube:
+            image: sonarqube:community
+            container_name: sonarqube
+            restart: unless-stopped
+            environment:
+              - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+            ports:
+              - "9000:9000"
+            volumes:
+              - sonarqube_data:/opt/sonarqube/data
+              - sonarqube_logs:/opt/sonarqube/logs
+              - sonarqube_extensions:/opt/sonarqube/extensions
+        
+        volumes:
+          sonarqube_data:
+          sonarqube_logs:
+          sonarqube_extensions:
+        COMPOSE_EOF
+        
+        echo "=== Iniciando SonarQube ==="
+        sudo docker-compose up -d
+        
+        echo "=== Esperando que SonarQube inicie ==="
+        sleep 60
+        
+        echo "=== Verificando estado ==="
+        sudo docker ps
+        curl -s http://localhost:9000/api/system/status || echo "SonarQube aún iniciando..."
+        
+        EOF
+    
+    - name: Verificar SonarQube desde GitHub
+      run: |
+        echo "Verificando SonarQube desde GitHub Actions..."
+        sleep 30
+        curl -s http://${{ github.event.inputs.vm_ip }}:9000/api/system/status || echo "Aún no disponible externamente"
+    
+    - name: Mostrar información de configuración
+      run: |
+        echo "🎉 ¡Configuración completada!"
+        echo ""
+        echo "📋 Próximos pasos manuales:"
+        echo "1. Accede a: http://${{ github.event.inputs.vm_ip }}:9000"
+        echo "2. Login: admin / admin"
+        echo "3. Cambia la contraseña por defecto"
+        echo "4. Crea proyecto local con key: cybervault"
+        echo "5. Ve a Administration > Security > Users > admin > Tokens"
+        echo "6. Genera token con nombre: github-actions-token"
+        echo "7. Copia el token generado"
+        echo ""
+        echo "📝 GitHub Secrets a configurar:"
+        echo "SONAR_HOST_URL: http://${{ github.event.inputs.vm_ip }}:9000"
+        echo "SONAR_TOKEN: [tu token generado]"
+        echo ""
+        echo "⚠️ IMPORTANTE: Asegúrate de que el puerto 9000 esté abierto en Azure"

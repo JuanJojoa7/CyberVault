@@ -5,7 +5,13 @@
     "main": "server/server.js",
     "scripts": {
         "start": "node server/server.js",
-        "dev": "nodemon server/server.js"
+        "dev": "nodemon server/server.js",
+        "test": "jest",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch",
+        "sonar": "sonar-scanner",
+        "security:scan": "powershell -ExecutionPolicy Bypass -File ./security-scan.ps1",
+        "audit": "npm audit --audit-level moderate"
     },
     "dependencies": {
         "axios": "^1.7.2",
@@ -14,6 +20,24 @@
         "express": "^4.19.2"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "nodemon": "^3.0.1",
+        "jest": "^29.7.0",
+        "supertest": "^6.3.3",
+        "@types/jest": "^29.5.5",
+        "sonarqube-scanner": "^3.3.0"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "collectCoverage": true,
+        "coverageDirectory": "coverage",
+        "coverageReporters": ["text", "lcov", "html"],
+        "collectCoverageFrom": [
+            "server/**/*.js",
+            "!server/node_modules/**"
+        ],
+        "testMatch": [
+            "**/__tests__/**/*.js",
+            "**/?(*.)+(spec|test).js"
+        ]
     }
 }

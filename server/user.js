@@ -1,10 +1,10 @@
 class User {
-    constructor(name, email, password, isAdmin) {
-        this.isAdmin = false;
-        this.isOnline = false;
+    constructor(name, email, password, isAdmin = false) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.isAdmin = isAdmin;
+        this.isOnline = false;
         this.history = [];
     }
 
