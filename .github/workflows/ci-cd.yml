@@ -92,22 +92,16 @@ jobs:
       run: npm run test:coverage
     
     - name: SonarQube Scan
-      uses: sonarqube-quality-gate-action@master
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      with:
-        projectBaseDir: .
-        args: >
-          -Dsonar.projectKey=cybervault
-          -Dsonar.projectName=CyberVault
-          -Dsonar.sources=server,client/js
-          -Dsonar.exclusions=node_modules/**,coverage/**,__tests__/**,**/*.test.js,**/*.spec.js
-          -Dsonar.tests=__tests__
-          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-          -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,node_modules/**
+    
+    - name: SonarQube Quality Gate Check
+      uses: SonarSource/sonarqube-quality-gate-action@v1
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build:
     name: Build Application
