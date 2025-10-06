@@ -1,0 +1,53 @@
+name: Debug SonarQube VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      vm_ip:
+        description: 'IP de tu VM de Azure'
+        required: true
+        default: '172.177.237.92'
+      vm_user:
+        description: 'Usuario de la VM'
+        required: true
+        default: 'vmadmin'
+
+jobs:
+  debug-sonarqube:
+    name: Verificar estado de SonarQube
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Instalar sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
+    
+    - name: Verificar estado de SonarQube en VM
+      env:
+        VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
+      run: |
+        export SSHPASS="$VM_PASSWORD"
+        
+        echo "=== Verificando estado de Docker ==="
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ github.event.inputs.vm_user }}@${{ github.event.inputs.vm_ip }} << 'EOF'
+        
+        echo "--- Contenedores corriendo ---"
+        sudo docker ps
+        
+        echo "--- Estado de SonarQube container ---"
+        sudo docker logs sonarqube --tail 20
+        
+        echo "--- Verificando puertos abiertos ---"
+        sudo netstat -tlnp | grep 9000
+        
+        echo "--- Verificando desde localhost ---"
+        curl -s http://localhost:9000/api/system/status || echo "No responde en localhost"
+        
+        echo "--- Verificando firewall ---"
+        sudo ufw status
+        
+        EOF
+    
+    - name: Verificar acceso externo desde GitHub
+      run: |
+        echo "=== Verificando acceso externo ==="
+        curl -v --connect-timeout 10 http://${{ github.event.inputs.vm_ip }}:9000/api/system/status || echo "No accesible externamente"
