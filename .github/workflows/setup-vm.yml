@@ -40,7 +40,7 @@ jobs:
         sudo apt update && sudo apt upgrade -y
         
         echo "=== Instalando Docker ==="
-        sudo apt install docker.io docker-compose -y
+        sudo apt install docker.io -y
         sudo systemctl start docker
         sudo systemctl enable docker
         sudo usermod -aG docker $USER
@@ -74,11 +74,11 @@ jobs:
           sonarqube_extensions:
         COMPOSE_EOF
         
-        echo "=== Iniciando SonarQube ==="
-        sudo docker-compose up -d
+        echo "=== Iniciando SonarQube con Docker Compose V2 ==="
+        sudo docker compose up -d
         
         echo "=== Esperando que SonarQube inicie ==="
-        sleep 90
+        sleep 120
         
         echo "=== Verificando estado ==="
         sudo docker ps
