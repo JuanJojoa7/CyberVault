@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   test:
     name: Run Tests and Coverage
@@ -54,6 +59,7 @@ jobs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
+      continue-on-error: true
     
     - name: Run Trivy for dependencies
       uses: aquasecurity/trivy-action@master
