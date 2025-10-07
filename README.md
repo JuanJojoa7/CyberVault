@@ -1,10 +1,12 @@
 # CyberVault
 
-## Autores
+## Autores (Aplicativo Principal)
 - Juan Sebastian Gonzalez
 - Oscar Gomez
-- Juan Felipe Jojoa Crespo
 - Juan Manuel Marin Angarita
+
+## Autor (SonarQube y CI/CD)
+- Juan Felipe Jojoa Crespo - A00382042
 
 ## Descripción
 CyberVault es una aplicación web de e-commerce desarrollada con Node.js y Express en el backend, y HTML/CSS/JavaScript en el frontend. El proyecto incluye integración completa con SonarQube para análisis de calidad de código y pipeline de CI/CD con GitHub Actions.
