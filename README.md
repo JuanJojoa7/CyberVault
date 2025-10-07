@@ -1,4 +1,4 @@
-# CyberVault
+# CyberVault Compunet 1 Proyecto Final
 
 ## Autores (Aplicativo Principal)
 - Juan Sebastian Gonzalez
@@ -116,6 +116,42 @@ El pipeline se ejecuta automáticamente cuando:
 1. Ve a GitHub Actions en tu repositorio para ver el estado del pipeline
 2. Accede a tu SonarQube (`http://TU_IP_VM:9000`) para ver el análisis de calidad
 
+## Visualizaciones y Resultados
+
+### SonarQube Dashboard
+Una vez configurado correctamente, podrás acceder al dashboard de SonarQube:
+
+![Configuración de SonarQube](config.png)
+*Configuración inicial del proyecto en SonarQube*
+
+![Login SonarQube](login.png)
+*Interfaz de login de SonarQube*
+
+### Resultados del Análisis de Calidad
+Después de ejecutar el pipeline, obtendrás métricas detalladas:
+
+![Análisis Exitoso](passed.png)
+*Dashboard de SonarQube mostrando análisis exitoso con métricas de calidad*
+
+- **Quality Gate**: PASSED
+- **Coverage**: 1.5% (cumple requisito > 0%)
+- **Security Rating**: A (0 vulnerabilidades)
+- **Reliability Rating**: A (0 bugs)
+- **Maintainability Rating**: A (3 code smells)
+- **Duplications**: 0.0%
+
+### Análisis de Seguridad con Trivy
+El proyecto incluye análisis automático de vulnerabilidades:
+
+![Trivy Security Scan](trivy.png)
+*Resultados del análisis de seguridad con Trivy en GitHub Actions*
+
+Trivy analiza:
+- Vulnerabilidades en dependencias
+- Configuraciones de seguridad
+- Secretos expuestos
+- Análisis de contenedores Docker
+
 ## Cuentas de Prueba
 La aplicación incluye las siguientes cuentas predefinidas:
 
@@ -175,6 +211,40 @@ npm start
 # Análisis SonarQube local
 node sonar-scanner.js
 ```
+
+## Interpretando los Resultados
+
+### Cómo Leer el Dashboard de SonarQube
+Una vez que el pipeline ejecute exitosamente, podrás interpretar los resultados:
+
+1. **Quality Gate Status**: 
+   - Verde (PASSED): El código cumple todos los criterios de calidad
+   - Rojo (FAILED): Hay métricas que no cumplen los umbrales
+
+2. **Métricas Principales**:
+   - **Security (0 Open Issues)**: Sin vulnerabilidades de seguridad
+   - **Reliability (0 Open Issues)**: Sin bugs detectados
+   - **Maintainability (3 Open Issues)**: Code smells menores que no afectan funcionalidad
+   - **Coverage (1.5%)**: Porcentaje de código cubierto por tests
+
+3. **Security Hotspots**: Áreas de código que requieren revisión manual de seguridad
+
+### Interpretando Trivy Security Scan
+Los resultados de Trivy se muestran en la pestaña Security > Code Scanning de GitHub:
+
+1. **Vulnerabilidades por Severidad**:
+   - Critical/High: Requieren atención inmediata
+   - Medium/Low: Documentadas para futura revisión
+
+2. **Tipos de Análisis**:
+   - Dependencias npm en package-lock.json
+   - Configuraciones inseguras
+   - Potenciales exposiciones de secretos
+
+### Accediendo a los Resultados
+- **SonarQube**: `http://TU_IP_VM:9000/dashboard?id=CyberVault`
+- **GitHub Security**: Tu repositorio > Security > Code scanning
+- **GitHub Actions**: Tu repositorio > Actions (para logs del pipeline)
 
 ## Troubleshooting
 
