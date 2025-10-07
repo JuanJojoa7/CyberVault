@@ -1,5 +1,7 @@
 # CyberVault Compunet 1 Proyecto Final
 
+📋 **[Ver Reporte Final Completo](REPORTE_FINAL.md)** - Documentación técnica detallada del proceso de implementación
+
 ## Autores (Aplicativo Principal)
 - Juan Sebastian Gonzalez
 - Oscar Gomez
